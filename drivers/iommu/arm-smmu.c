@@ -92,7 +92,7 @@
 #define ARM_MMU500_ACR_SMTNMB_TLBEN	(1 << 8)
 
 #define TLB_LOOP_TIMEOUT		500000	/* 500ms */
-#define TLB_SPIN_COUNT			10
+#define TLB_LOOP_INC_MAX		1000      /*1ms*/
 
 #define ARM_SMMU_IMPL_DEF0(smmu) \
 	((smmu)->base + (2 * (1 << (smmu)->pgshift)))
@@ -1203,17 +1203,18 @@ static void arm_smmu_testbus_dump(struct arm_smmu_device *smmu, u16 sid)
 static int __arm_smmu_tlb_sync(struct arm_smmu_device *smmu,
 			void __iomem *sync, void __iomem *status)
 {
-	unsigned int spin_cnt, delay;
+	unsigned int inc, delay;
 	u32 sync_inv_ack, tbu_pwr_status, sync_inv_progress;
 
 	writel_relaxed(QCOM_DUMMY_VAL, sync);
-	for (delay = 1; delay < TLB_LOOP_TIMEOUT; delay *= 2) {
-		for (spin_cnt = TLB_SPIN_COUNT; spin_cnt > 0; spin_cnt--) {
-			if (!(readl_relaxed(status) & sTLBGSTATUS_GSACTIVE))
-				return 0;
-			cpu_relax();
-		}
-		udelay(delay);
+	for (delay = 1, inc = 1; delay < TLB_LOOP_TIMEOUT; delay += inc) {
+		if (!(readl_relaxed(status) & sTLBGSTATUS_GSACTIVE))
+			return 0;
+
+		cpu_relax();
+		udelay(inc);
+		if (inc < TLB_LOOP_INC_MAX)
+			inc *= 2;
 	}
 	sync_inv_ack = scm_io_read((unsigned long)(smmu->phys_addr +
 				     ARM_SMMU_STATS_SYNC_INV_TBU_ACK));
