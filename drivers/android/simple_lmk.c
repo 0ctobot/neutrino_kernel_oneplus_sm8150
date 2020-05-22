@@ -29,21 +29,21 @@ struct victim_info {
 };
 
 /* Pulled from the Android framework. Lower adj means higher priority. */
-static const short adjs[] = {
-	1000, /* CACHED_APP_MAX_ADJ + 1 */
-	950,  /* CACHED_APP_LMK_FIRST_ADJ */
-	900,  /* CACHED_APP_MIN_ADJ */
-	800,  /* SERVICE_B_ADJ */
-	700,  /* PREVIOUS_APP_ADJ */
-	600,  /* HOME_APP_ADJ */
-	500,  /* SERVICE_ADJ */
-	400,  /* HEAVY_WEIGHT_APP_ADJ */
-	300,  /* BACKUP_APP_ADJ */
-	250,  /* PERCEPTIBLE_LOW_APP_ADJ */
-	200,  /* PERCEPTIBLE_APP_ADJ */
-	100,  /* VISIBLE_APP_ADJ */
-	50,   /* PERCEPTIBLE_RECENT_FOREGROUND_APP_ADJ */
-	0     /* FOREGROUND_APP_ADJ */
+static const unsigned short adjs[] = {
+	SHRT_MAX + 1, /* Include all positive adjs in the final range */
+	950, /* CACHED_APP_LMK_FIRST_ADJ */
+	900, /* CACHED_APP_MIN_ADJ */
+	800, /* SERVICE_B_ADJ */
+	700, /* PREVIOUS_APP_ADJ */
+	600, /* HOME_APP_ADJ */
+	500, /* SERVICE_ADJ */
+	400, /* HEAVY_WEIGHT_APP_ADJ */
+	300, /* BACKUP_APP_ADJ */
+	250, /* PERCEPTIBLE_LOW_APP_ADJ */
+	200, /* PERCEPTIBLE_APP_ADJ */
+	100, /* VISIBLE_APP_ADJ */
+	50, /* PERCEPTIBLE_RECENT_FOREGROUND_APP_ADJ */
+	0 /* FOREGROUND_APP_ADJ */
 };
 
 static struct victim_info victims[MAX_VICTIMS];
@@ -85,8 +85,8 @@ static unsigned long get_total_mm_pages(struct mm_struct *mm)
 	return pages;
 }
 
-static unsigned long find_victims(int *vindex, short target_adj_min,
-				  short target_adj_max)
+static unsigned long find_victims(int *vindex, unsigned short target_adj_min,
+				  unsigned short target_adj_max)
 {
 	unsigned long pages_found = 0;
 	int old_vindex = *vindex;
@@ -172,18 +172,14 @@ static void scan_and_kill(unsigned long pages_needed)
 	int i, nr_to_kill = 0, nr_victims = 0, ret;
 	unsigned long pages_found = 0;
 
-	/*
-	 * Hold the tasklist lock so tasks don't disappear while scanning. This
-	 * is preferred to holding an RCU read lock so that the list of tasks
-	 * is guaranteed to be up to date.
-	 */
-	read_lock(&tasklist_lock);
+	/* Hold an RCU read lock while traversing the global process list */
+	rcu_read_lock();
 	for (i = 1; i < ARRAY_SIZE(adjs); i++) {
 		pages_found += find_victims(&nr_victims, adjs[i], adjs[i - 1]);
 		if (pages_found >= pages_needed || nr_victims == MAX_VICTIMS)
 			break;
 	}
-	read_unlock(&tasklist_lock);
+	rcu_read_unlock();
 
 	/* Pretty unlikely but it can happen */
 	if (unlikely(!nr_victims)) {
