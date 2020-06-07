@@ -3677,7 +3677,6 @@ void ipa3_q6_pre_shutdown_cleanup(void)
 	/* Remove delay from Q6 PRODs to avoid pending descriptors
 	 * on pipe reset procedure
 	 */
-
 	if (!ipa3_ctx->ipa_endp_delay_wa) {
 		ipa3_q6_pipe_delay(false);
 		ipa3_set_reset_client_prod_pipe_delay(true,
@@ -6508,6 +6507,10 @@ static int ipa3_pre_init(const struct ipa3_plat_drv_res *resource_p,
 	ipa3_ctx->wan_rx_ring_size = resource_p->wan_rx_ring_size;
 	ipa3_ctx->lan_rx_ring_size = resource_p->lan_rx_ring_size;
 	ipa3_ctx->ipa_wan_skb_page = resource_p->ipa_wan_skb_page;
+	ipa3_ctx->stats.page_recycle_stats[0].total_replenished = 0;
+	ipa3_ctx->stats.page_recycle_stats[0].tmp_alloc = 0;
+	ipa3_ctx->stats.page_recycle_stats[1].total_replenished = 0;
+	ipa3_ctx->stats.page_recycle_stats[1].tmp_alloc = 0;
 	ipa3_ctx->skip_uc_pipe_reset = resource_p->skip_uc_pipe_reset;
 	ipa3_ctx->tethered_flow_control = resource_p->tethered_flow_control;
 	ipa3_ctx->ee = resource_p->ee;

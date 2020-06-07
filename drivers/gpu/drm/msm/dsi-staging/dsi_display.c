@@ -7217,9 +7217,9 @@ int dsi_display_validate_mode_change(struct dsi_display *display,
 				pr_debug("Mode switch is seamless variable refresh\n");
 				adj_mode->dsi_mode_flags |= DSI_MODE_FLAG_VRR;
 				SDE_EVT32(cur_mode->timing.refresh_rate,
-					  adj_mode->timing.refresh_rate,
-					  cur_mode->timing.h_front_porch,
-					  adj_mode->timing.h_front_porch);
+					adj_mode->timing.refresh_rate,
+					cur_mode->timing.h_front_porch,
+					adj_mode->timing.h_front_porch);
 			}
 		}
 

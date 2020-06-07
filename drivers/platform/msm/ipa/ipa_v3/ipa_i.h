@@ -1354,6 +1354,10 @@ enum ipa3_config_this_ep {
 	IPA_DO_NOT_CONFIGURE_THIS_EP,
 };
 
+struct ipa3_page_recycle_stats {
+	u64 total_replenished;
+	u64 tmp_alloc;
+};
 struct ipa3_stats {
 	u32 tx_sw_pkts;
 	u32 tx_hw_pkts;
@@ -1374,6 +1378,7 @@ struct ipa3_stats {
 	u32 flow_enable;
 	u32 flow_disable;
 	u32 tx_non_linear;
+	struct ipa3_page_recycle_stats page_recycle_stats[2];
 };
 
 /* offset for each stats */
@@ -2659,7 +2664,7 @@ int ipa3_teth_bridge_disconnect(enum ipa_client_type client);
 
 int ipa3_teth_bridge_connect(struct teth_bridge_connect_params *connect_params);
 
-int ipa3_teth_bridge_get_pm_hdl(enum ipa_client_type client);
+int ipa3_teth_bridge_get_pm_hdl(void);
 
 /*
  * Tethering client info
@@ -2964,8 +2969,6 @@ int ipa3_uc_debug_stats_dealloc(uint32_t prot_id);
 void ipa3_tag_destroy_imm(void *user1, int user2);
 const struct ipa_gsi_ep_config *ipa3_get_gsi_ep_info
 	(enum ipa_client_type client);
-
-bool ipa3_check_idr_if_freed(void *ptr);
 
 int ipa3_wigig_init_i(void);
 int ipa3_wigig_uc_init(
