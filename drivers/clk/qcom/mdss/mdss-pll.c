@@ -400,11 +400,6 @@ static int mdss_pll_remove(struct platform_device *pdev)
 static const struct of_device_id mdss_pll_dt_match[] = {
 	{.compatible = "qcom,mdss_dsi_pll_7nm"},
 	{.compatible = "qcom,mdss_dsi_pll_7nm_v2"},
-	{.compatible = "qcom,mdss_dp_pll_7nm"},
-	{.compatible = "qcom,mdss_dsi_pll_28lpm"},
-	{.compatible = "qcom,mdss_dsi_pll_14nm"},
-	{.compatible = "qcom,mdss_dp_pll_14nm"},
-	{.compatible = "qcom,mdss_hdmi_pll_28lpm"},
 	{}
 };
 
