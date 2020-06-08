@@ -830,7 +830,6 @@ int pm_suspend(suspend_state_t state)
 		return -EINVAL;
 
 	qcom_smem_state_update_bits(qstate, AWAKE_BIT, 0);
-	pr_err("%s: PM_SUSPEND_PREPARE smp2p_change_state", __func__); 
 
 	pm_suspend_marker("entry");
 	pr_debug("suspend entry (%s)\n", mem_sleep_labels[state]);
@@ -842,7 +841,6 @@ int pm_suspend(suspend_state_t state)
 	error = enter_state(state);
 
 	qcom_smem_state_update_bits(qstate, AWAKE_BIT, AWAKE_BIT);
-	pr_err("%s: PM_POST_SUSPEND smp2p_change_state", __func__);
 
 	if (error) {
 		suspend_stats.fail++;
