@@ -5009,8 +5009,6 @@ CONFIG_AW8697_HAPTIC=y
 #
 # LED Triggers
 #
-CONFIG_HOUSTON=y
-CONFIG_CONTROL_CENTER=y
 
 #
 # Qualcomm RmNet extensions
