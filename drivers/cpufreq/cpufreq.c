@@ -1182,10 +1182,6 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
 	INIT_LIST_HEAD(&policy->policy_list);
 	init_rwsem(&policy->rwsem);
 	spin_lock_init(&policy->transition_lock);
-// tedlin@ASTI 2019/06/12 add for CONFIG_CONTROL_CENTER
-#ifdef CONFIG_CONTROL_CENTER
-	spin_lock_init(&policy->cc_lock);
-#endif
 	init_waitqueue_head(&policy->transition_wait);
 	init_completion(&policy->kobj_unregister);
 	INIT_WORK(&policy->update, handle_update);
@@ -1312,13 +1308,6 @@ static int cpufreq_online(unsigned int cpu)
 	} else {
 		policy->min = policy->user_policy.min;
 		policy->max = policy->user_policy.max;
-// tedlin@ASTI 2019/06/12 add for CONFIG_CONTROL_CENTER
-#ifdef CONFIG_CONTROL_CENTER
-		spin_lock(&policy->cc_lock);
-		policy->cc_min = policy->min;
-		policy->cc_max = policy->max;
-		spin_unlock(&policy->cc_lock);
-#endif
 	}
 
 	if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
@@ -1942,10 +1931,6 @@ unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
 	struct qos_request_value *qos;
 	int ret;
 
-#ifdef CONFIG_CONTROL_CENTER
-	if (likely(policy->cc_enable))
-		target_freq = clamp_val(target_freq, policy->cc_min, policy->cc_max);
-#endif
 	target_freq = clamp_val(target_freq, policy->min, policy->max);
 	if (policy->cpu >= GOLD_PLUS_CPU_NUMBER)
 		qos = &c2_qos_request_value;
@@ -2059,10 +2044,6 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
 	if (cpufreq_disabled())
 		return -ENODEV;
 
-#ifdef CONFIG_CONTROL_CENTER
-	if (likely(policy->cc_enable))
-		target_freq = clamp_val(target_freq, policy->cc_min, policy->cc_max);
-#endif
 	/* Make sure that target_freq is within supported range */
 	target_freq = clamp_val(target_freq, policy->min, policy->max);
 
@@ -2340,14 +2321,6 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 
 	policy->min = new_policy->min;
 	policy->max = new_policy->max;
-
-// tedlin@ASTI 2019/06/12 add for CONFIG_CONTROL_CENTER
-#ifdef CONFIG_CONTROL_CENTER
-	spin_lock(&policy->cc_lock);
-	policy->cc_min = policy->min;
-	policy->cc_max = policy->max;
-	spin_unlock(&policy->cc_lock);
-#endif
 
 	arch_set_max_freq_scale(policy->cpus, policy->max);
 

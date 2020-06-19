@@ -23,9 +23,6 @@
 #include <linux/thermal.h>
 #include "power_supply.h"
 
-// tedlin@ASTI 2019/06/12 add for CONFIG_HOUSTON
-#include <oneplus/houston/houston_helper.h>
-
 /* exported for the APM Power driver, APM emulation */
 struct class *power_supply_class;
 EXPORT_SYMBOL_GPL(power_supply_class);
@@ -936,10 +933,6 @@ __power_supply_register(struct device *parent,
 	queue_delayed_work(system_power_efficient_wq,
 			   &psy->deferred_register_work,
 			   POWER_SUPPLY_DEFERRED_REGISTER_TIME);
-
-// tedlin@ASTI 2019/06/12 add to register (CONFIG_HOUSTON)
-	ht_register_power_supply(psy);
-
 	return psy;
 
 create_triggers_failed:
