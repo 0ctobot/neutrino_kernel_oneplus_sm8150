@@ -1,1 +1,1 @@
-obj-$(CONFIG_HOUSTON) += houston.o
+obj-y += houston.o

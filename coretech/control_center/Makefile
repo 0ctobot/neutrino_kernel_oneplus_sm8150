@@ -1,1 +1,1 @@
-obj-$(CONFIG_CONTROL_CENTER) += control_center.o
+obj-y += control_center.o
