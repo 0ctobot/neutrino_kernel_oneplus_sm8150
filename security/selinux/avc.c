@@ -128,7 +128,7 @@ static inline int avc_hash(u32 ssid, u32 tsid, u16 tclass)
 {
 	return (ssid ^ (tsid<<2) ^ (tclass<<4)) & (AVC_CACHE_SLOTS - 1);
 }
-#ifdef CONFIG_AUDIT
+
 /**
  * avc_dump_av - Display an access vector in human-readable form.
  * @tclass: target security class
@@ -197,7 +197,6 @@ static void avc_dump_query(struct audit_buffer *ab, struct selinux_state *state,
 	BUG_ON(!tclass || tclass >= ARRAY_SIZE(secclass_map));
 	audit_log_format(ab, " tclass=%s", secclass_map[tclass-1].name);
 }
-#endif
 
 /**
  * avc_init - Initialize the AVC.
@@ -492,7 +491,6 @@ static inline int avc_xperms_audit(struct selinux_state *state,
 				   u8 perm, int result,
 				   struct common_audit_data *ad)
 {
-#ifdef CONFIG_AUDIT
 	u32 audited, denied;
 
 	audited = avc_xperms_audit_required(
@@ -501,9 +499,6 @@ static inline int avc_xperms_audit(struct selinux_state *state,
 		return 0;
 	return slow_avc_audit(state, ssid, tsid, tclass, requested,
 			audited, denied, result, ad, 0);
-#else
-	return 0;
-#endif
 }
 
 static void avc_node_free(struct rcu_head *rhead)
@@ -731,7 +726,6 @@ found:
 	return node;
 }
 
-#ifdef CONFIG_AUDIT
 /**
  * avc_audit_pre_callback - SELinux specific information
  * will be called by generic audit code
@@ -757,9 +751,6 @@ static void avc_audit_pre_callback(struct audit_buffer *ab, void *a)
 static void avc_audit_post_callback(struct audit_buffer *ab, void *a)
 {
 	struct common_audit_data *ad = a;
-	u32 scontext_len;
-	int rc;
-
 	audit_log_format(ab, " ");
 	avc_dump_query(ab, ad->selinux_audit_data->state,
 		       ad->selinux_audit_data->ssid,
@@ -769,23 +760,7 @@ static void avc_audit_post_callback(struct audit_buffer *ab, void *a)
 		audit_log_format(ab, " permissive=%u",
 				 ad->selinux_audit_data->result ? 0 : 1);
 	}
-
-	/* in case of invalid context report also the actual context string */
-	rc = security_sid_to_context_inval(sad->state, sad->ssid, &scontext,
-					   &scontext_len);
-	if (!rc && scontext) {
-		audit_log_format(ab, " srawcon=%s", scontext);
-		kfree(scontext);
-	}
-
-	rc = security_sid_to_context_inval(sad->state, sad->tsid, &scontext,
-					   &scontext_len);
-	if (!rc && scontext) {
-		audit_log_format(ab, " trawcon=%s", scontext);
-		kfree(scontext);
-	}
 }
-
 
 /* This is the slow part of avc audit with big stack footprint */
 noinline int slow_avc_audit(struct selinux_state *state,
@@ -831,7 +806,6 @@ noinline int slow_avc_audit(struct selinux_state *state,
 	common_lsm_audit(a, avc_audit_pre_callback, avc_audit_post_callback);
 	return 0;
 }
-#endif
 
 /**
  * avc_add_callback - Register a callback for security events.

@@ -104,10 +104,9 @@ struct selinux_state {
 	bool checkreqprot;
 	bool initialized;
 	bool policycap[__POLICYDB_CAPABILITY_MAX];
-	bool android_netlink_route;
 	struct selinux_avc *avc;
 	struct selinux_ss *ss;
-} __randomize_layout;
+};
 
 void selinux_ss_init(struct selinux_ss **ss);
 void selinux_avc_init(struct selinux_avc **avc);
@@ -175,13 +174,6 @@ static inline bool selinux_policycap_nnp_nosuid_transition(void)
 	struct selinux_state *state = &selinux_state;
 
 	return state->policycap[POLICYDB_CAPABILITY_NNP_NOSUID_TRANSITION];
-}
-
-static inline bool selinux_android_nlroute_getlink(void)
-{
-	struct selinux_state *state = &selinux_state;
-
-	return state->android_netlink_route;
 }
 
 int security_mls_enabled(struct selinux_state *state);
@@ -261,9 +253,6 @@ int security_sid_to_context(struct selinux_state *state, u32 sid,
 			    char **scontext, u32 *scontext_len);
 
 int security_sid_to_context_force(struct selinux_state *state,
-				  u32 sid, char **scontext, u32 *scontext_len);
-
-int security_sid_to_context_inval(struct selinux_state *state,
 				  u32 sid, char **scontext, u32 *scontext_len);
 
 int security_context_to_sid(struct selinux_state *state,
@@ -401,7 +390,6 @@ extern int selinux_nlmsg_lookup(u16 sclass, u16 nlmsg_type, u32 *perm);
 extern void avtab_cache_init(void);
 extern void ebitmap_cache_init(void);
 extern void hashtab_cache_init(void);
-extern void selinux_nlmsg_init(void);
 extern int security_sidtab_hash_stats(struct selinux_state *state, char *page);
 
 #endif /* _SELINUX_SECURITY_H_ */
