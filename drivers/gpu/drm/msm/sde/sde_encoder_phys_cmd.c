@@ -708,7 +708,7 @@ static int _sde_encoder_phys_cmd_wait_for_idle(
 {
 	struct sde_encoder_phys_cmd *cmd_enc =
 			to_sde_encoder_phys_cmd(phys_enc);
-	struct sde_encoder_wait_info wait_info = {0};
+	struct sde_encoder_wait_info wait_info = {NULL};
 	bool recovery_events;
 	int ret;
 
