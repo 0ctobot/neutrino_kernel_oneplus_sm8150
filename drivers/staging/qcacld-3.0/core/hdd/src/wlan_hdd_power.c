@@ -1693,7 +1693,6 @@ static void wlan_hdd_print_suspend_fail_stats(struct hdd_context *hdd_ctx)
 		stats->suspend_fail[SUSPEND_FAIL_ROAM],
 		stats->suspend_fail[SUSPEND_FAIL_SCAN],
 		stats->suspend_fail[SUSPEND_FAIL_INITIAL_WAKEUP]);
-#endif
 }
 
 void wlan_hdd_inc_suspend_stats(struct hdd_context *hdd_ctx,
