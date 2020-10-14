@@ -1283,7 +1283,7 @@ lim_update_short_preamble(struct mac_context *mac_ctx, tSirMacAddr peer_mac_addr
 	}
 
 	if (i >= LIM_PROT_STA_CACHE_SIZE) {
-		tLimNoShortParams *lim_params =
+		tLimNoShortParams *lim_params __maybe_unused =
 				&psession_entry->gLimNoShortParams;
 		if (LIM_IS_AP_ROLE(psession_entry)) {
 #ifdef WLAN_DEBUG
