@@ -65,8 +65,8 @@ config ZRAM_DEFAULT_BACKEND
 	default "z3fold" if DEFAULT_ZRAM_Z3FOLD
 	default "zsmalloc"
 
-endif
-
 config ZRAM_DEFAULT_COMP_ALGORITHM
 	string "Default ZRAM compression algorithm"
 	default "lz4"
+
+endif
