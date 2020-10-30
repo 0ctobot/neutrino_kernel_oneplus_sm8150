@@ -21,7 +21,6 @@ struct zpool {
 	struct zpool_driver *driver;
 	void *pool;
 	const struct zpool_ops *ops;
-	bool evictable;
 
 	struct list_head list;
 };
@@ -143,7 +142,7 @@ EXPORT_SYMBOL(zpool_has_pool);
  *
  * This creates a new zpool of the specified type.  The gfp flags will be
  * used when allocating memory, if the implementation supports it.  If the
- * ops param is NULL, then the created zpool will not be evictable.
+ * ops param is NULL, then the created zpool will not be shrinkable.
  *
  * Implementations must guarantee this to be thread-safe.
  *
@@ -181,7 +180,6 @@ struct zpool *zpool_create_pool(const char *type, const char *name, gfp_t gfp,
 	zpool->driver = driver;
 	zpool->pool = driver->create(name, gfp, ops, zpool);
 	zpool->ops = ops;
-	zpool->evictable = driver->shrink && ops && ops->evict;
 
 	if (!zpool->pool) {
 		pr_err("couldn't create %s pool\n", type);
@@ -235,22 +233,6 @@ void zpool_destroy_pool(struct zpool *zpool)
 const char *zpool_get_type(struct zpool *zpool)
 {
 	return zpool->driver->type;
-}
-
-/**
- * zpool_malloc_support_movable() - Check if the zpool support
- * allocate movable memory
- * @zpool:	The zpool to check
- *
- * This returns if the zpool support allocate movable memory.
- *
- * Implementations must guarantee this to be thread-safe.
- *
- * Returns: true if if the zpool support allocate movable memory, false if not
- */
-bool zpool_malloc_support_movable(struct zpool *zpool)
-{
-	return zpool->driver->malloc_support_movable;
 }
 
 /**
@@ -314,8 +296,7 @@ void zpool_free(struct zpool *zpool, unsigned long handle)
 int zpool_shrink(struct zpool *zpool, unsigned int pages,
 			unsigned int *reclaimed)
 {
-	return zpool->driver->shrink ?
-	       zpool->driver->shrink(zpool->pool, pages, reclaimed) : -EINVAL;
+	return zpool->driver->shrink(zpool->pool, pages, reclaimed);
 }
 
 /**
@@ -369,20 +350,25 @@ void zpool_unmap_handle(struct zpool *zpool, unsigned long handle)
  */
 unsigned long zpool_compact(struct zpool *zpool)
 {
-	return zpool->driver->compact ? zpool->driver->compact(zpool->pool) : 0;
+	if (!zpool->driver->compact)
+		return 0;
+
+	return zpool->driver->compact(zpool->pool);
 }
 
 
 /**
  * zpool_get_num_compacted() - get the number of migrated/compacted pages
- * @pool       The zpool to get compaction statistic for
+ * @stats	stats to fill in
  *
  * Returns: the total number of migrated pages for the pool
  */
 unsigned long zpool_get_num_compacted(struct zpool *zpool)
 {
-	return zpool->driver->get_num_compacted ?
-		zpool->driver->get_num_compacted(zpool->pool) : 0;
+	if (!zpool->driver->get_num_compacted)
+		return 0;
+
+	return zpool->driver->get_num_compacted(zpool->pool);
 }
 
 /**
@@ -396,18 +382,6 @@ unsigned long zpool_get_num_compacted(struct zpool *zpool)
 u64 zpool_get_total_size(struct zpool *zpool)
 {
 	return zpool->driver->total_size(zpool->pool);
-}
-
-/**
- * zpool_huge_class_size() - get size for the "huge" class
- * @pool	The zpool to check
- *
- * Returns: size of the huge class
- */
-size_t zpool_huge_class_size(struct zpool *zpool)
-{
-	return zpool->driver->huge_class_size ?
-		zpool->driver->huge_class_size(zpool->pool) : 0;
 }
 
 MODULE_LICENSE("GPL");

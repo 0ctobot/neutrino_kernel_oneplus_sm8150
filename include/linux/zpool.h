@@ -46,8 +46,6 @@ const char *zpool_get_type(struct zpool *pool);
 
 void zpool_destroy_pool(struct zpool *pool);
 
-bool zpool_malloc_support_movable(struct zpool *pool);
-
 int zpool_malloc(struct zpool *pool, size_t size, gfp_t gfp,
 			unsigned long *handle);
 
@@ -67,7 +65,6 @@ unsigned long zpool_get_num_compacted(struct zpool *pool);
 
 u64 zpool_get_total_size(struct zpool *pool);
 
-size_t zpool_huge_class_size(struct zpool *zpool);
 
 /**
  * struct zpool_driver - driver implementation for zpool
@@ -82,8 +79,7 @@ size_t zpool_huge_class_size(struct zpool *zpool);
  * @unmap:	unmap a handle.
  * @compact:	try to run compaction over a pool
  * @get_num_compacted:	get amount of compacted pages for a pool
- * @total_size:	get total size of a pool
- * @huge_class_size: huge class threshold for pool pages.
+ * @total_size:	get total size of a pool.
  *
  * This is created by a zpool implementation and registered
  * with zpool.
@@ -100,7 +96,6 @@ struct zpool_driver {
 			struct zpool *zpool);
 	void (*destroy)(void *pool);
 
-	bool malloc_support_movable;
 	int (*malloc)(void *pool, size_t size, gfp_t gfp,
 				unsigned long *handle);
 	void (*free)(void *pool, unsigned long handle);
@@ -116,13 +111,10 @@ struct zpool_driver {
 	unsigned long (*get_num_compacted)(void *pool);
 
 	u64 (*total_size)(void *pool);
-	size_t (*huge_class_size)(void *pool);
 };
 
 void zpool_register_driver(struct zpool_driver *driver);
 
 int zpool_unregister_driver(struct zpool_driver *driver);
-
-bool zpool_evictable(struct zpool *pool);
 
 #endif
